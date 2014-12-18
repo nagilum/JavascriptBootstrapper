@@ -1,4 +1,9 @@
-﻿var bsQueue = [],
+﻿/**
+ * @file
+ * Loads .js files async and executes queued code when all tagged files are loaded.
+ */
+
+var bsQueue = [],
     bsFiles = 0,
     bsLoaded = 0;
 
