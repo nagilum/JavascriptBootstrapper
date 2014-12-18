@@ -38,20 +38,15 @@
             script.type = 'text/javascript';
             script.src = url;
             script.async = false;
-            script.onload = function () { startExecuting(); };
+            script.onload = function() {
+                filesLoaded++;
+
+                if (filesLoaded === totalFiles)
+                    executeQueue();
+            };
 
             head.appendChild(script);
         });
-    }
-
-    /**
-     * Check if all files are loaded and start executing the queue.
-     */
-    function startExecuting() {
-        filesLoaded++;
-
-        if (filesLoaded === totalFiles)
-            executeQueue();
     }
 
     /**
