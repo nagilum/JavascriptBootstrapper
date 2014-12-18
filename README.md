@@ -26,7 +26,7 @@ Example:
 		</div>
 		<script>
 			// This document ready wrapper will queue the code until jQuery is loaded, then execute it.
-			bsReady(function () {
+			queueCode(function () {
 				$('div#victory').test('AFTER ASYNC LOAD');
 			});
 		</script>

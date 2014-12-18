@@ -1,79 +1,74 @@
-﻿/**
- * @file
- * Loads .js files async and executes queued code when all tagged files are loaded.
- */
+﻿(function() {
+    var queue = [],
+        totalFiles = 0,
+        filesLoaded = 0;
 
-var bsQueue = [],
-    bsFiles = 0,
-    bsLoaded = 0;
+    /**
+     * Executes the first item of code in the queue.
+     */
+    function executeQueue() {
+        if (queue.length === 0)
+            return;
 
-/**
- * Executes the first item of code in the queue.
- */
-function bsExecuteQueue() {
-    if (bsQueue.length === 0)
-        return;
+        // Only execute the first item if it's a function.
+        if (typeof queue[0] === 'function')
+            queue[0]();
 
-    // Only execute the first item if it's a function.
-    if (typeof bsQueue[0] === 'function')
-        bsQueue[0]();
+        // Remove the first item from the queue.
+        queue.shift();
 
-    // Remove the first item from the queue.
-    bsQueue.shift();
+        // Check for more items.
+        if (queue.length > 0)
+            executeQueue();
+    }
 
-    // Check for more items.
-    if (bsQueue.length > 0)
-        bsExecuteQueue();
-}
+    /**
+     * Find the executing script tag and load attributed JS files.
+     */
+    function init() {
+        var tag = document.getElementById('bootstrapper'),
+            urls = (tag ? tag.getAttribute('data-load').split('|') : []),
+            head = document.getElementsByTagName('head')[0];
 
-/**
- * Find the executing script tag and load attributed JS files.
- */
-function bsInit() {
-    var tag = document.getElementById('bootstrapper'),
-        urls = (tag ? tag.getAttribute('data-load').split('|') : []),
-        head = document.getElementsByTagName('head')[0];
+        totalFiles = urls.length;
 
-    bsFiles = urls.length;
+        urls.forEach(function (url) {
+            var script = document.createElement('script');
 
-    urls.forEach(function(url) {
-        var script = document.createElement('script');
+            script.type = 'text/javascript';
+            script.src = url;
+            script.async = false;
+            script.onload = function () { startExecuting(); };
 
-        script.type = 'text/javascript';
-        script.src = url;
-        script.async = true;
+            head.appendChild(script);
+        });
+    }
 
-        script.onreadystatechange = function () { bsStartExecuting(); };
-        script.onload = function () { bsStartExecuting(); };
+    /**
+     * Check if all files are loaded and start executing the queue.
+     */
+    function startExecuting() {
+        filesLoaded++;
 
-        head.appendChild(script);
-    });
-}
+        if (filesLoaded === totalFiles)
+            executeQueue();
+    }
 
-/**
- * Execute code if all JS files are loaded, adds to queue if not.
- *
- * @param code code
- *   Code to execute.
- */
-function bsReady(code) {
-    // Add to queue.
-    bsQueue.push(code);
+    /**
+     * Execute code if all JS files are loaded, adds to queue if not.
+     *
+     * @param code code
+     *   Code to execute.
+     */
+    window.queueCode = function (code) {
+        // Add to queue.
+        queue.push(code);
 
-    // Check for finished loading.
-    if (bsLoaded === bsFiles)
-        bsExecuteQueue();
-}
+        // Check for finished loading.
+        if (filesLoaded === totalFiles)
+            executeQueue();
+    }
 
-/**
- * Check if all files are loaded and start executing the queue.
- */
-function bsStartExecuting() {
-    bsLoaded++;
-
-    if (bsLoaded === bsFiles)
-        bsExecuteQueue();
-}
-
-// All is ready, let kick this party off!
-bsInit();
+    // All is ready, let kick this party off!
+    init();
+})();
